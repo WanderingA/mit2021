@@ -104,7 +104,8 @@ extern uint64 sys_unlink(void);
 extern uint64 sys_wait(void);
 extern uint64 sys_write(void);
 extern uint64 sys_uptime(void);
-extern uint64 sys_trace(void);
+extern uint64 sys_trace(void);   //here
+extern uint64 sys_sysinfo(void);  //here
 
 static uint64 (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -128,7 +129,8 @@ static uint64 (*syscalls[])(void) = {
 [SYS_link]    sys_link,
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
-[SYS_trace]   sys_trace,
+[SYS_trace]   sys_trace,  //here
+[SYS_sysinfo] sys_sysinfo, //here
 };
 
 // void
@@ -170,6 +172,7 @@ const char *syscall_names[] = {
     [SYS_mkdir] "mkdir",
     [SYS_close] "close",
     [SYS_trace] "trace",
+    [SYS_sysinfo] "sysinfo",
 };
 
 void syscall(void)
@@ -179,11 +182,11 @@ void syscall(void)
   num = p->trapframe->a7; //获取系统调用号
   if (num > 0 && num < NELEM(syscalls) && syscalls[num])
   {
-    p->trapframe->a0 = syscalls[num](); //通过num找到对应的系统调用函数
-    int trace = p->trace_mask;  //获取当前进程的trace值
-    if ((trace >> num) & 1) // 如果trace值中包含当前系统调用号
+    p->trapframe->a0 = syscalls[num](); // 通过num找到对应的系统调用函数
+    int trace = p->trace_mask;     // 获取当前进程的trace值
+    if ((trace >> num) & 1)   // 如果trace值中包含当前系统调用号
     {
-      printf("%d: syscall %s -> %d\n", p->pid, syscall_names[num], p->trapframe->a0); //打印系统调用信息
+      printf("%d: syscall %s -> %d\n", p->pid, syscall_names[num], p->trapframe->a0); // 打印系统调用信息
     }
   }
   else{
@@ -191,4 +194,3 @@ void syscall(void)
     p->trapframe->a0 = -1;
   }
 }
-

@@ -108,7 +108,7 @@ allocproc(void)
 
   for(p = proc; p < &proc[NPROC]; p++) {
     acquire(&p->lock);
-    if(p->state == UNUSED) {
+    if(p->state == UNUSED) {  //先找到的是没使用的
       goto found;
     } else {
       release(&p->lock);
@@ -141,6 +141,7 @@ found:
   p->context.ra = (uint64)forkret;
   p->context.sp = p->kstack + PGSIZE;
 
+  p->trace_mask = 0;
   return p;
 }
 
@@ -657,4 +658,19 @@ procdump(void)
     printf("%d %s %s", p->pid, state, p->name);
     printf("\n");
   }
+}
+
+uint get_proc_cnt(){
+  struct proc* cur_proc;
+  uint cnt = 0;
+  for(cur_proc=proc;cur_proc<&proc[NPROC];cur_proc++)
+  {
+    acquire(&cur_proc->lock);
+    if(cur_proc->state != UNUSED)
+    {
+      cnt++; //如果这个进程是正在使用的
+    }
+    release(&cur_proc->lock);
+  }
+  return cnt;
 }
